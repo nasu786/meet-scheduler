@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meet Scheduler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            padding: 30px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--dark);
+            opacity: 0.7;
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--dark);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        select,
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background-color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        select:focus,
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .required-field::after {
+            content: " *";
+            color: var(--danger);
+        }
+
+        .duration-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .duration-select {
+            flex: 1;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-secondary {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e68a00;
+        }
+
+        /* Response Box */
+        .response-box {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            display: none;
+        }
+
+        .response-box.success {
+            border-left-color: var(--success);
+            background-color: rgba(76, 201, 240, 0.1);
+        }
+
+        .response-box.error {
+            border-left-color: var(--danger);
+            background-color: rgba(247, 37, 133, 0.1);
+        }
+
+        .response-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .response-title i {
+            margin-right: 8px;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .init-loading {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        /* Suggestion Box */
+        .suggestion-box {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #fff8e1;
+            border-left: 4px solid var(--warning);
+            border-radius: 6px;
+        }
+
+        .suggestion-title {
+            font-weight: 500;
+            color: var(--warning);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .suggestion-title i {
+            margin-right: 8px;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-scheduled {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-completed {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #d32f2f;
+        }
+
+        /* Add Trainer/Room Section */
+        .add-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .add-column {
+            flex: 1;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .add-column h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-row input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .resource-list {
+            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .resource-list h4 {
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .resource-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .resource-list li {
+            padding: 8px 12px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 14px;
+        }
+
+        .btn-icon:hover {
+            color: #c62828;
+        }
+
+        .add-column {
+            flex: 1;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 0 10px;
+        }
+
+        .add-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .add-container {
+                flex-direction: column;
+            }
+
+            .add-column {
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .add-container {
+                flex-direction: column;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-calendar-alt"></i> Meet Scheduler</h1>
+                <p>Manage your meetings, trainers and rooms</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <div class="tab active" data-tab="scheduler">Meet Scheduler</div>
+                <div class="tab" data-tab="schedules">Schedules List</div>
+                <div class="tab" data-tab="management">Manage Trainers & Rooms</div>
+            </div>
+
+            <!-- Tab Contents -->
+            <div id="initLoading" class="init-loading">
+                <div class="spinner"></div>
+                <p>Loading scheduler...</p>
+            </div>
+
+            <!-- Meet Scheduler Tab -->
+            <div id="scheduler-tab" class="tab-content active">
+                <div class="form-container" id="formContainer">
+                    <form id="bookingForm">
+                        <div class="form-group">
+                            <label for="title" class="required-field">Meeting Title</label>
+                            <input type="text" id="title" placeholder="Enter meeting title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="trainer" class="required-field">Trainer</label>
+                            <select id="trainer" required>
+                                <option value="" disabled selected>Loading trainers...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="room" class="required-field">Room</label>
+                            <select id="room" required>
+                                <option value="" disabled selected>Loading rooms...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="datetime" class="required-field">Date & Time</label>
+                            <input type="datetime-local" id="datetime" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="duration" class="required-field">Duration</label>
+                            <div class="duration-container">
+                                <select id="duration-hours" class="duration-select" required>
+                                    <option value="0">0 hours</option>
+                                    <option value="1" selected>1 hour</option>
+                                    <option value="2">2 hours</option>
+                                    <option value="3">3 hours</option>
+                                    <option value="4">4 hours</option>
+                                    <option value="5">5 hours</option>
+                                    <option value="6">6 hours</option>
+                                    <option value="7">7 hours</option>
+                                    <option value="8">8 hours</option>
+                                </select>
+                                <select id="duration-minutes" class="duration-select" required>
+                                    <option value="0" selected>0 minutes</option>
+                                    <option value="15">15 minutes</option>
+                                    <option value="30">30 minutes</option>
+                                    <option value="45">45 minutes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description (Optional)</label>
+                            <textarea id="description" placeholder="Enter meeting description"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn" id="submitBtn" disabled>
+                            <i class="fas fa-search"></i> Check Availability
+                        </button>
+                    </form>
+
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Checking availability...</p>
+                    </div>
+
+                    <div class="response-box" id="responseBox">
+                        <div class="response-title" id="responseTitle">
+                            <i class="fas fa-info-circle"></i>
+                            <span id="responseStatus">Status</span>
+                        </div>
+                        <div class="response-message" id="responseMessage"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedules List Tab -->
+            <div id="schedules-tab" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Scheduled Meetings</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" id="clearSchedulesBtn"
+                            style="width: auto; padding: 8px 16px;">
+                            <i class="fas fa-trash-alt"></i> Clear
+                        </button>
+                        <button class="btn" id="refreshSchedulesBtn" style="width: auto; padding: 8px 16px;">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="schedulesTable">
+                        <thead>
+                            <tr>
+                                <th>SI.No</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Trainer</th>
+                                <th>Room</th>
+                                <th>Date & Time</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedulesTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- Manage Trainers & Rooms Tab -->
+            <div id="management-tab" class="tab-content">
+                <h2>Manage Resources</h2>
+                <div class="add-container">
+                    <!-- Trainer Section -->
+                    <div class="add-column">
+                        <h3><i class="fas fa-chalkboard-teacher"></i> Trainers</h3>
+
+                        <!-- Add Trainer Row -->
+                        <div class="form-group">
+                            <label for="trainerName">Add New Trainer</label>
+                            <div class="input-row">
+                                <input type="text" id="trainerName" placeholder="Enter trainer name">
+                                <button class="btn" onclick="addTrainer()" style="width: auto; margin-left: 10px;">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            <div id="trainerResponse" class="response-box" style="display: none; margin-top: 10px;">
+                            </div>
+                        </div>
+
+                        <!-- Trainer List -->
+                        <div class="resource-list">
+                            <h4>Existing Trainers</h4>
+                            <ul id="trainersList">
+                                <!-- Trainers will be loaded here -->
+                                <li>John Doe <button class="btn-icon" onclick="deleteTrainer('101')"><i
+                                            class="fas fa-trash"></i></button></li>
+                                <li>Jane Smith <button class="btn-icon" onclick="deleteTrainer('102')"><i
+                                            class="fas fa-trash"></i></button></li>
+                                <li>Mike Johnson <button class="btn-icon" onclick="deleteTrainer('103')"><i
+                                            class="fas fa-trash"></i></button></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Room Section -->
+                    <div class="add-column">
+                        <h3><i class="fas fa-door-open"></i> Rooms</h3>
+
+                        <!-- Add Room Row -->
+                        <div class="form-group">
+                            <label for="roomNumber">Add New Room</label>
+                            <div class="input-row">
+                                <input type="number" id="roomNumber" placeholder="Enter room number">
+                                <button class="btn" onclick="addRoom()" style="width: auto; margin-left: 10px;">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            <div id="roomResponse" class="response-box" style="display: none; margin-top: 10px;"></div>
+                        </div>
+
+                        <!-- Room List -->
+                        <div class="resource-list">
+                            <h4>Existing Rooms</h4>
+                            <ul id="roomsList">
+                                <!-- Rooms will be loaded here -->
+                                <li>Room 1 <button class="btn-icon" onclick="deleteRoom('401')"><i
+                                            class="fas fa-trash"></i></button></li>
+                                <li>Room 2 <button class="btn-icon" onclick="deleteRoom('402')"><i
+                                            class="fas fa-trash"></i></button></li>
+                                <li>Room 3 <button class="fas fa-trash"></i></button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:3000';
+        const TRAINERS_ENDPOINT = '/trainers';
+        const ROOMS_ENDPOINT = '/rooms';
+        const SCHEDULES_ENDPOINT = '/schedules';
+        const AVAILABILITY_ENDPOINT = '/schedules';
+        const ADD_TRAINER_ENDPOINT = '/trainers';
+        const ADD_ROOM_ENDPOINT = '/rooms';
+
+        // DOM Elements
+        const formContainer = document.getElementById('formContainer');
+        const initLoading = document.getElementById('initLoading');
+        const trainerSelect = document.getElementById('trainer');
+        const roomSelect = document.getElementById('room');
+        const submitBtn = document.getElementById('submitBtn');
+        const bookingForm = document.getElementById('bookingForm');
+        const durationHours = document.getElementById('duration-hours');
+        const durationMinutes = document.getElementById('duration-minutes');
+        const schedulesTableBody = document.getElementById('schedulesTableBody');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Sample data for schedules (would be replaced with API data)
+        const sampleSchedules = [
+            {
+                _id: "1",
+                title: "Team Meeting",
+                description: "Weekly team sync",
+                trainer: { name: "John Doe", _id: "101" },
+                room: { room_number: 4, _id: "401" },
+                scheduledAt: "2025-04-03T10:00:00.000Z",
+                duration: 3600000,
+                status: "Scheduled"
+            },
+            {
+                _id: "2",
+                title: "Training Session",
+                description: "React training for new hires",
+                trainer: { name: "Jane Smith", _id: "102" },
+                room: { room_number: 2, _id: "402" },
+                scheduledAt: "2025-04-04T14:00:00.000Z",
+                duration: 7200000,
+                status: "Completed"
+            },
+            {
+                _id: "3",
+                title: "Client Presentation",
+                description: "Product demo for ABC Corp",
+                trainer: { name: "Mike Johnson", _id: "103" },
+                room: { room_number: 1, _id: "403" },
+                scheduledAt: "2025-04-05T09:30:00.000Z",
+                duration: 5400000,
+                status: "Cancelled"
+            }
+        ];
+
+        // Initialize the application
+        document.getElementById('loading').style.display = 'none';
+        document.addEventListener('DOMContentLoaded', async function () {
+            try {
+                // Load trainers and rooms in parallel
+                const [trainers, rooms] = await Promise.all([
+                    fetchData(TRAINERS_ENDPOINT),
+                    fetchData(ROOMS_ENDPOINT)
+                ]);
+
+                // Populate trainers dropdown
+                populateDropdown(trainerSelect, trainers, 'name', '_id');
+
+                // Populate rooms dropdown
+                populateDropdown(roomSelect, rooms, 'room_number', '_id');
+
+                // Set default datetime (24 hours from now)
+                const now = new Date();
+                now.setHours(now.getHours() + 24);
+                const datetimeStr = now.toISOString().slice(0, 16);
+                document.getElementById('datetime').value = datetimeStr;
+
+                // Load schedules
+                loadSchedules();
+
+                // Show form and hide loading indicator
+                initLoading.style.display = 'none';
+                formContainer.style.display = 'block';
+                submitBtn.disabled = false;
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                initLoading.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: var(--danger); font-size: 24px; margin-bottom: 10px;"></i>
+                    <p>Failed to load scheduler data. Please refresh the page.</p>
+                `;
+            }
+        });
+
+        // Tab switching functionality
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Form submission handler
+        bookingForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Show loading spinner
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('responseBox').style.display = 'none';
+            submitBtn.disabled = true;
+
+            // Get form values
+            const title = document.getElementById('title').value;
+            const trainerId = trainerSelect.value;
+            const trainerName = trainerSelect.options[trainerSelect.selectedIndex].text;
+            const roomId = roomSelect.value;
+            const roomNumber = roomSelect.options[roomSelect.selectedIndex].text;
+            const datetime = document.getElementById('datetime').value;
+            const hours = parseInt(durationHours.value);
+            const minutes = parseInt(durationMinutes.value);
+            const description = document.getElementById('description').value;
+            const totalDurationMs = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
+
+            try {
+                // Prepare request data
+                const requestData = {
+                    title: title,
+                    scheduleAt: datetime,
+                    room: roomId,
+                    trainer: trainerId,
+                    duration: totalDurationMs,
+                    description: description
+                };
+
+                // Call availability API
+                const response = await fetchData(AVAILABILITY_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                // Display response
+                const responseBox = document.getElementById('responseBox');
+                const responseTitle = document.getElementById('responseTitle');
+                const responseMessage = document.getElementById('responseMessage');
+
+                // Clear previous content
+                responseMessage.innerHTML = '';
+
+                // Handle different response types
+                if (response.message === "Meeting scheduled successfully") {
+                    // Simple success case
+                    responseBox.className = 'response-box success';
+                    responseTitle.innerHTML = `<i class="fas fa-check-circle"></i>
+                                            <span id="responseStatus">Success</span>`;
+                    responseMessage.innerHTML = `
+                        <p><strong>${title}</strong></p>
+                        <p>${response.message}</p>
+                        <p><strong>Details:</strong></p>
+                        <ul style="margin-top: 8px; margin-left: 34px;">
+                            <li>Room: ${roomNumber}</li>
+                            <li>Trainer: ${trainerName}</li>
+                            <li>Time: ${new Date(datetime).toLocaleString()}</li>
+                            <li>Duration: ${formatDuration(hours, minutes)}</li>
+                            ${description ? `<li>Description: ${description}</li>` : ''}
+                        </ul>
+                    `;
+                    // Refresh schedules list
+                    loadSchedules();
+                }
+                else if (response.result) {
+                    // Conflict with suggestion case
+                    responseBox.className = 'response-box error';
+                    responseTitle.innerHTML = `<i class="fas fa-exclamation-triangle"></i>
+                                            <span id="responseStatus">Conflict</span>`;
+
+                    let messageContent = `
+                        <p><strong>${title}</strong></p>
+                        <p>${response.result.message}</p>
+                        <div class="suggestion-box">
+                            <div class="suggestion-title">
+                                <i class="fas fa-lightbulb"></i> Suggestion
+                            </div>
+                            <p>${response.result.suggestion}</p>
+                            <button class="btn btn-secondary" style="margin-top: 12px;" onclick="useSuggestion('${response.result.suggestion}')">
+                                <i class="fas fa-calendar-plus"></i> Use This Suggestion
+                            </button>
+                        </div>
+                    `;
+
+                    responseMessage.innerHTML = messageContent;
+                }
+                else {
+                    // Generic success case
+                    responseBox.className = 'response-box success';
+                    responseTitle.innerHTML = `<i class="fas fa-check-circle"></i>
+                                            <span id="responseStatus">Success</span>`;
+                    responseMessage.innerHTML = `<p>${JSON.stringify(response)}</p>`;
+                }
+
+                responseBox.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error:', error);
+                const responseBox = document.getElementById('responseBox');
+                responseBox.className = 'response-box error';
+                document.getElementById('responseTitle').innerHTML = `<i class="fas fa-times-circle"></i>
+                                                                    <span id="responseStatus">Error</span>`;
+                document.getElementById('responseMessage').innerHTML = 'An error occurred while checking availability.';
+                responseBox.style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Clear button functionality
+        document.getElementById('clearSchedulesBtn').addEventListener('click', async function () {
+            if (confirm('Are you sure you want to clear all schedules? This action cannot be undone.')) {
+                const clearBtn = this;
+                const originalText = clearBtn.innerHTML;
+
+                try {
+                    // Show loading state
+                    clearBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+                    clearBtn.disabled = true;
+
+                    // In a real app, you would call an API endpoint to clear schedules
+                    await fetchData('/schedules', { method: 'DELETE' });
+
+                    // For demo purposes, we'll just clear the table
+                    document.getElementById('schedulesTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center;">
+                            No schedules available
+                        </td>
+                    </tr>
+                `;
+
+                    // Show success message
+                    const responseBox = document.getElementById('responseBox');
+                    responseBox.className = 'response-box success';
+                    document.getElementById('responseTitle').innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span id="responseStatus">Success</span>
+                `;
+                    document.getElementById('responseMessage').innerHTML = `
+                    <p>All schedules have been cleared successfully.</p>
+                `;
+                    responseBox.style.display = 'block';
+
+                } catch (error) {
+                    console.error('Error clearing schedules:', error);
+                    const responseBox = document.getElementById('responseBox');
+                    responseBox.className = 'response-box error';
+                    document.getElementById('responseTitle').innerHTML = `
+                    <i class="fas fa-times-circle"></i>
+                    <span id="responseStatus">Error</span>
+                `;
+                    document.getElementById('responseMessage').innerHTML = `
+                    <p>Failed to clear schedules. Please try again.</p>
+                `;
+                    responseBox.style.display = 'block';
+                } finally {
+                    // Restore button state
+                    clearBtn.innerHTML = originalText;
+                    clearBtn.disabled = false;
+                }
+            }
+        });
+
+        // Refresh data
+        document.getElementById('refreshSchedulesBtn').addEventListener('click', async function () {
+            const refreshBtn = this;
+            const originalText = refreshBtn.innerHTML;
+
+            try {
+                // Show loading state
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+                refreshBtn.disabled = true;
+
+                // Clear existing table data with loading message
+                document.getElementById('schedulesTableBody').innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center;">
+                        <div class="spinner"></div>
+                        <p>Loading schedules...</p>
+                    </td>
+                </tr>
+            `;
+
+                // Fetch fresh data from API
+                await loadSchedules();
+
+                // Show success message
+                const responseBox = document.getElementById('responseBox');
+                responseBox.className = 'response-box success';
+                document.getElementById('responseTitle').innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <span id="responseStatus">Success</span>
+            `;
+                document.getElementById('responseMessage').innerHTML = `
+                <p>Schedules have been refreshed successfully.</p>
+            `;
+                responseBox.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error refreshing schedules:', error);
+                document.getElementById('schedulesTableBody').innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--danger);">
+                        Failed to refresh schedules. Please try again.
+                    </td>
+                </tr>
+            `;
+
+                const responseBox = document.getElementById('responseBox');
+                responseBox.className = 'response-box error';
+                document.getElementById('responseTitle').innerHTML = `
+                <i class="fas fa-times-circle"></i>
+                <span id="responseStatus">Error</span>
+            `;
+                document.getElementById('responseMessage').innerHTML = `
+                <p>Failed to refresh schedules. Please try again.</p>
+            `;
+                responseBox.style.display = 'block';
+            } finally {
+                // Restore button state
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.disabled = false;
+            }
+        });
+
+        // Load schedules data
+        async function loadSchedules() {
+            try {
+                // Clear table first
+                document.getElementById('schedulesTableBody').innerHTML = '';
+
+                // In a real app, you would fetch from API:
+                const schedules = await fetchData(SCHEDULES_ENDPOINT);
+
+                if (schedules.response.length === 0) {
+                    document.getElementById('schedulesTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center;">
+                            No schedules available
+                        </td>
+                    </tr>
+                `;
+                    return;
+                }
+
+                schedules.response.forEach((schedule, index) => {
+                    const row = document.createElement('tr');
+                    const durationHours = Math.floor(schedule.duration / (60 * 60 * 1000));
+                    const durationMinutes = Math.floor((schedule.duration % (60 * 60 * 1000)) / (60 * 1000));
+
+                    row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${schedule.title}</td>
+                    <td>${schedule.description || '-'}</td>
+                    <td>${schedule.trainer.name}</td>
+                    <td>${schedule.room.room_number}</td>
+                    <td>${new Date(schedule.scheduledAt).toLocaleString()}</td>
+                    <td>${formatDuration(durationHours, durationMinutes)}</td>
+                    <td><span class="status status-${schedule.status.toLowerCase()}">${schedule.status}</span></td>
+                `;
+                    document.getElementById('schedulesTableBody').appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+                document.getElementById('schedulesTableBody').innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--danger);">
+                        Failed to load schedules. Please try again.
+                    </td>
+                </tr>
+            `;
+                throw error; // Re-throw to handle in refresh function
+            }
+        }
+        // Trainer Management Functions
+        async function addTrainer() {
+            const nameInput = document.getElementById('trainerName');
+            const name = nameInput.value.trim();
+            const responseBox = document.getElementById('trainerResponse');
+
+            if (!name) {
+                responseBox.className = 'response-box error';
+                responseBox.innerHTML = '<p>Please enter a trainer name</p>';
+                responseBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                // Show loading state
+                responseBox.innerHTML = '<div class="spinner"></div>';
+                responseBox.style.display = 'block';
+
+                // In a real app, you would post to API:
+                const response = await fetchData(ADD_TRAINER_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+
+                // Simulate API response
+                const newId = Math.floor(Math.random() * 1000).toString();
+                // const response = {
+                //     success: true,
+                //     message: `Trainer "${name}" added successfully`,
+                //     trainer: { _id: newId, name: name }
+                // };
+
+                response.message = `Trainer "${name}" added successfully`
+                response.room = { _id: newId, name: name }
+
+                responseBox.className = 'response-box success';
+                responseBox.innerHTML = `<p>${response.message}</p>`;
+
+                // Clear input
+                nameInput.value = '';
+
+                // Add to trainers list
+                const li = document.createElement('li');
+                li.innerHTML = `${name} <button class="btn-icon" onclick="deleteTrainer('${newId}')"><i class="fas fa-trash"></i></button>`;
+                document.getElementById('trainersList').appendChild(li);
+
+                // Refresh trainers dropdown
+                const trainers = await fetchData(TRAINERS_ENDPOINT);
+                populateDropdown(trainerSelect, trainers, 'name', '_id');
+
+            } catch (error) {
+                console.error('Error adding trainer:', error);
+                responseBox.className = 'response-box error';
+                responseBox.innerHTML = '<p>Failed to add trainer. Please try again.</p>';
+            }
+        }
+
+        async function deleteTrainer(id) {
+            if (confirm('Are you sure you want to delete this trainer?')) {
+                try {
+                    // In a real app, you would call:
+                    await fetchData(`${TRAINERS_ENDPOINT}/${id}`, { method: 'DELETE' });
+
+                    // Simulate deletion
+                    const trainerItem = document.querySelector(`#trainersList li button[onclick="deleteTrainer('${id}')"]`)?.parentElement;
+                    if (trainerItem) {
+                        trainerItem.remove();
+                    }
+
+                    // Show success message
+                    const responseBox = document.getElementById('trainerResponse');
+                    responseBox.className = 'response-box success';
+                    responseBox.innerHTML = '<p>Trainer deleted successfully</p>';
+                    responseBox.style.display = 'block';
+
+                    // Refresh trainers dropdown
+                    const trainers = await fetchData(TRAINERS_ENDPOINT);
+                    populateDropdown(trainerSelect, trainers, 'name', '_id');
+
+                } catch (error) {
+                    console.error('Error deleting trainer:', error);
+                    const responseBox = document.getElementById('trainerResponse');
+                    responseBox.className = 'response-box error';
+                    responseBox.innerHTML = '<p>Failed to delete trainer. Please try again.</p>';
+                    responseBox.style.display = 'block';
+                }
+            }
+        }
+
+        // Room Management Functions
+        async function addRoom() {
+            const numberInput = document.getElementById('roomNumber');
+            const number = numberInput.value.trim();
+            const responseBox = document.getElementById('roomResponse');
+
+            if (!number) {
+                responseBox.className = 'response-box error';
+                responseBox.innerHTML = '<p>Please enter a room number</p>';
+                responseBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                // Show loading state
+                responseBox.innerHTML = '<div class="spinner"></div>';
+                responseBox.style.display = 'block';
+
+                // In a real app, you would post to API:
+                const response = await fetchData(ADD_ROOM_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ room_number: number })
+                });
+
+                // Simulate API response
+                const newId = Math.floor(Math.random() * 1000).toString();
+                // const response = {
+                //     success: true,
+                //     message: `Room "${number}" added successfully`,
+                //     room: { _id: newId, room_number: number }
+                // };
+
+                response.message = `Room "${number}" added successfully`
+                response.room = { _id: newId, room_number: number }
+
+                responseBox.className = 'response-box success';
+                responseBox.innerHTML = `<p>${response.message}</p>`;
+
+                // Clear input
+                numberInput.value = '';
+
+                // Add to rooms list
+                const li = document.createElement('li');
+                li.innerHTML = `Room ${number} <button class="btn-icon" onclick="deleteRoom('${newId}')"><i class="fas fa-trash"></i></button>`;
+                document.getElementById('roomsList').appendChild(li);
+
+                // Refresh rooms dropdown
+                const rooms = await fetchData(ROOMS_ENDPOINT);
+                populateDropdown(roomSelect, rooms, 'room_number', '_id');
+
+            } catch (error) {
+                console.error('Error adding room:', error);
+                responseBox.className = 'response-box error';
+                responseBox.innerHTML = '<p>Failed to add room. Please try again.</p>';
+            }
+        }
+
+        async function deleteRoom(id) {
+            if (confirm('Are you sure you want to delete this room?')) {
+                try {
+                    // In a real app, you would call:
+                    await fetchData(`${ROOMS_ENDPOINT}/${id}`, { method: 'DELETE' });
+
+                    // Simulate deletion
+                    const roomItem = document.querySelector(`#roomsList li button[onclick="deleteRoom('${id}')"]`)?.parentElement;
+                    if (roomItem) {
+                        roomItem.remove();
+                    }
+
+                    // Show success message
+                    const responseBox = document.getElementById('roomResponse');
+                    responseBox.className = 'response-box success';
+                    responseBox.innerHTML = '<p>Room deleted successfully</p>';
+                    responseBox.style.display = 'block';
+
+                    // Refresh rooms dropdown
+                    const rooms = await fetchData(ROOMS_ENDPOINT);
+                    populateDropdown(roomSelect, rooms, 'room_number', '_id');
+
+                } catch (error) {
+                    console.error('Error deleting room:', error);
+                    const responseBox = document.getElementById('roomResponse');
+                    responseBox.className = 'response-box error';
+                    responseBox.innerHTML = '<p>Failed to delete room. Please try again.</p>';
+                    responseBox.style.display = 'block';
+                }
+            }
+        }
+
+        // Helper function to load initial data
+        async function loadInitialResources() {
+            try {
+                // Load trainers
+                const trainers = await fetchData(TRAINERS_ENDPOINT);
+                const trainersList = document.getElementById('trainersList');
+                trainersList.innerHTML = '';
+                trainers.response.forEach(trainer => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${trainer.name} <button class="btn-icon" onclick="deleteTrainer('${trainer._id}')"><i class="fas fa-trash"></i></button>`;
+                    trainersList.appendChild(li);
+                });
+
+                // Load rooms
+                const rooms = await fetchData(ROOMS_ENDPOINT);
+                const roomsList = document.getElementById('roomsList');
+                roomsList.innerHTML = '';
+                rooms.response.forEach(room => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `Room ${room.room_number} <button class="btn-icon" onclick="deleteRoom('${room._id}')"><i class="fas fa-trash"></i></button>`;
+                    roomsList.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error('Error loading initial resources:', error);
+            }
+        }
+
+        // Call this when the page loads or when the management tab is clicked
+        document.addEventListener('DOMContentLoaded', loadInitialResources);
+
+        // Or if you're using tab switching, add this to your tab click handler:
+        document.querySelector('.tab[data-tab="management"]').addEventListener('click', loadInitialResources);
+        // Helper function to fetch data
+        async function fetchData(endpoint, options = {}) {
+
+            // For real API calls:
+            const response = await fetch(API_BASE_URL + endpoint, options);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        }
+
+        // Helper function to populate dropdown
+        function populateDropdown(selectElement, data, textField, valueField) {
+            // Clear existing options
+            selectElement.innerHTML = '';
+
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            defaultOption.textContent = `Select ${selectElement.id}`;
+            selectElement.appendChild(defaultOption);
+
+            // Add data options
+            data.response.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item[valueField];
+                option.textContent = item[textField];
+                selectElement.appendChild(option);
+            });
+        }
+
+        // Helper function to format duration
+        function formatDuration(hours, minutes) {
+            let duration = '';
+            if (hours > 0) duration += `${hours} hour${hours > 1 ? 's' : ''}`;
+            if (minutes > 0) {
+                if (hours > 0) duration += ' and ';
+                duration += `${minutes} minute${minutes > 1 ? 's' : ''}`;
+            }
+            return duration || '0 minutes';
+        }
+
+        // Function to use suggestion
+        function useSuggestion(suggestionText) {
+            // Parse the suggestion text to extract details
+            const roomMatch = suggestionText.match(/Room No: (\d+)/);
+            const trainerMatch = suggestionText.match(/Trainer: (\w+)/);
+            const timeMatch = suggestionText.match(/([A-Za-z]{3} [A-Za-z]{3} \d{2} \d{4} \d{2}:\d{2}:\d{2} GMT[+-]\d{4} \([A-Za-z ]+\))/);
+
+            if (roomMatch && trainerMatch && timeMatch) {
+                const suggestedRoom = roomMatch[1];
+                const suggestedTrainer = trainerMatch[1];
+                const suggestedTime = new Date(timeMatch[0]);
+
+                // Find and select the suggested room
+                for (let i = 0; i < roomSelect.options.length; i++) {
+                    if (roomSelect.options[i].text.includes(suggestedRoom)) {
+                        roomSelect.value = roomSelect.options[i].value;
+                        break;
+                    }
+                }
+
+                // Find and select the suggested trainer
+                for (let i = 0; i < trainerSelect.options.length; i++) {
+                    if (trainerSelect.options[i].text.includes(suggestedTrainer)) {
+                        trainerSelect.value = trainerSelect.options[i].value;
+                        break;
+                    }
+                }
+
+                // Set the datetime (format as YYYY-MM-DDTHH:MM)
+                const datetimeStr = suggestedTime.toISOString().slice(0, 16);
+                document.getElementById('datetime').value = datetimeStr;
+
+                // Show success message
+                alert(`Form updated with suggested options:\nRoom: ${suggestedRoom}\nTrainer: ${suggestedTrainer}\nTime: ${suggestedTime.toLocaleString()}`);
+            } else {
+                alert('Could not parse suggestion details. Please update manually.');
+            }
+        }
+
+        // Function to confirm booking
+        function confirmBooking() {
+            // Get all form values
+            const title = document.getElementById('title').value;
+            const trainer = trainerSelect.options[trainerSelect.selectedIndex].text;
+            const room = roomSelect.options[roomSelect.selectedIndex].text;
+            const datetime = document.getElementById('datetime').value;
+            const hours = parseInt(durationHours.value);
+            const minutes = parseInt(durationMinutes.value);
+            const description = document.getElementById('description').value;
+
+            // Create confirmation message
+            let message = `Confirm booking for:\n\n`;
+            message += `Title: ${title}\n`;
+            message += `Trainer: ${trainer}\n`;
+            message += `Room: ${room}\n`;
+            message += `Date & Time: ${new Date(datetime).toLocaleString()}\n`;
+            message += `Duration: ${formatDuration(hours, minutes)}\n`;
+            if (description) {
+                message += `Description: ${description}\n`;
+            }
+
+            if (confirm(message)) {
+                alert('Booking confirmed!');
+                // Here you would typically make another API call to actually book the room
+                // Then refresh the schedules list
+                loadSchedules();
+            }
+        }
+    </script>
+</body>
+
+</html>
