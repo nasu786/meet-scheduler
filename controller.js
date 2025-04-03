@@ -9,7 +9,7 @@ class Controller {
                 room_number: req.body.room_number
             });
             await newRoom.save();
-            res.status(201);
+            res.status(201).json({ message: "Room created successfully" });
         }
 
         this.getRooms = async (req, res) => {
@@ -37,7 +37,7 @@ class Controller {
                 name: req.body.name
             });
             await newTrainer.save();
-            res.status(201);
+            res.status(201).json({ message: "Trainer created successfully" });
         }
 
         this.getTrainers = async (req, res) => {
